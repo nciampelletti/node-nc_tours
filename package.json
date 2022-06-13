@@ -1,0 +1,15 @@
+{
+  "name": "natours",
+  "version": "1.0.0",
+  "description": "test node with mongodb",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Natalia Ciampelletti",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nciampelletti/node-simplenode-mongodb/issues"
+  },
+  "homepage": "https://github.com/nciampelletti/node-simplenode-mongodb#readme"
+}
