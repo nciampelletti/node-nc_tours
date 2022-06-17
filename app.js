@@ -7,7 +7,15 @@ const {
   getTour,
   updateTour,
   deleteTour,
-} = require('./RouteHandlers');
+} = require('./ToursHandler');
+const {
+  getAllUsers,
+  createUser,
+  getUser,
+  updateUser,
+  deleteUser,
+} = require('./UsersHandler');
+
 const port = 8000;
 
 const app = express();
@@ -42,6 +50,14 @@ app
   .get(getTour)
   .patch(updateTour)
   .delete(deleteTour);
+
+app.route('/api/v1/users').get(getAllUsers).post(createUser);
+
+app
+  .route('/api/v1/users/:id')
+  .get(getUser)
+  .patch(updateUser)
+  .delete(deleteUser);
 
 //START SERVER
 app.listen(port, () => {
