@@ -1,6 +1,8 @@
 const fs = require('fs');
+const path = require('path');
 
-const filePath = `${__dirname}/dev-data/data/users.json`;
+const filePath = path.join(__dirname, '/../dev-data/data/users.json');
+console.log(filePath);
 const users = JSON.parse(fs.readFileSync(filePath));
 
 //ROUTE HANDLERS

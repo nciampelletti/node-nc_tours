@@ -1,27 +1,16 @@
 const express = require('express');
 
 const morgan = require('morgan');
-const {
-  getAllTours,
-  createTour,
-  getTour,
-  updateTour,
-  deleteTour,
-} = require('./ToursHandler');
-const {
-  getAllUsers,
-  createUser,
-  getUser,
-  updateUser,
-  deleteUser,
-} = require('./UsersHandler');
+
+const tourRouter = require('./routes/TourRoutes');
+const userRouter = require('./routes/UserRoutes');
 
 const port = 8000;
 
 const app = express();
 
 //MIDDLEWEAR
-app.use(morgan('dev'));
+app.use(morgan('dev')); //logging
 app.use(express.json());
 
 app.use((req, res, next) => {
@@ -35,29 +24,9 @@ app.use((req, res, next) => {
   next();
 });
 
-// app.get('/api/v1/tours', getAllTours);
-// app.post('/api/v1/tours', createTour);
-
-// app.get('/api/v1/tours/:id', getTour);
-// app.patch('/api/v1/tours/:id', updateTour);
-// app.delete('/api/v1/tours/:id', deleteTour);
-
 //ROUTES
-app.route('/api/v1/tours').get(getAllTours).post(createTour);
-
-app
-  .route('/api/v1/tours/:id')
-  .get(getTour)
-  .patch(updateTour)
-  .delete(deleteTour);
-
-app.route('/api/v1/users').get(getAllUsers).post(createUser);
-
-app
-  .route('/api/v1/users/:id')
-  .get(getUser)
-  .patch(updateUser)
-  .delete(deleteUser);
+app.use('/api/v1/tours', tourRouter);
+app.use('/api/v1/users', userRouter);
 
 //START SERVER
 app.listen(port, () => {

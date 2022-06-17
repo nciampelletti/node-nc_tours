@@ -1,6 +1,7 @@
 const fs = require('fs');
+const path = require('path');
 
-const filePath = `${__dirname}/dev-data/data/tours-simple.json`;
+const filePath = path.join(__dirname, '/../dev-data/data/tours-simple.json');
 const tours = JSON.parse(fs.readFileSync(filePath));
 
 //ROUTE HANDLERS
