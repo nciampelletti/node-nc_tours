@@ -1,85 +1,31 @@
 const express = require('express');
-const fs = require('fs');
-const filePath = `${__dirname}/dev-data/data/tours-simple.json`;
+
+const morgan = require('morgan');
+const {
+  getAllTours,
+  createTour,
+  getTour,
+  updateTour,
+  deleteTour,
+} = require('./RouteHandlers');
 const port = 8000;
 
 const app = express();
+
+//MIDDLEWEAR
+app.use(morgan('dev'));
 app.use(express.json());
 
-const tours = JSON.parse(fs.readFileSync(filePath));
+app.use((req, res, next) => {
+  console.log('hello from the middleware');
+  next();
+});
 
-const getAllTours = (req, res) => {
-  res.status(200).json({
-    status: 'success',
-    results: tours.length,
-    data: { tours: tours },
-  });
-};
+app.use((req, res, next) => {
+  req.requestTime = new Date().toISOString();
 
-const getTour = (req, res) => {
-  if (+req.params.id + 1 > tours.length) {
-    return res.status(404).json({
-      status: 'fail',
-      message: 'invalid id',
-    });
-  }
-
-  const tour = tours.find((el) => +req.params.id === el.id);
-
-  if (!tour) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: { tour: tour },
-  });
-};
-
-const createTour = (req, res) => {
-  const newId = tours[tours.length - 1].id + 1;
-  //const newTour1 = Object.assign({ _id: newId }, req.body);
-  const newTour = { id: newId, ...req.body };
-  tours.push(newTour);
-
-  fs.writeFile(filePath, JSON.stringify(tours), (err) => {
-    res.status(201).json({
-      status: 'success',
-      data: { tour: newTour },
-    });
-  });
-};
-
-const updateTour = (req, res) => {
-  if (+req.params.id + 1 > tours.length) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
-  res.status(200).json({
-    status: 'success',
-    data: { tour: '<Updated our here >' },
-  });
-};
-
-const deleteTour = (req, res) => {
-  if (+req.params.id + 1 > tours.length) {
-    res.status(404).json({
-      status: 'fail',
-      message: 'Invalid ID',
-    });
-  }
-
-  res.status(204).json({
-    status: 'success',
-    data: null,
-  });
-};
+  next();
+});
 
 // app.get('/api/v1/tours', getAllTours);
 // app.post('/api/v1/tours', createTour);
@@ -88,6 +34,7 @@ const deleteTour = (req, res) => {
 // app.patch('/api/v1/tours/:id', updateTour);
 // app.delete('/api/v1/tours/:id', deleteTour);
 
+//ROUTES
 app.route('/api/v1/tours').get(getAllTours).post(createTour);
 
 app
@@ -96,6 +43,7 @@ app
   .patch(updateTour)
   .delete(deleteTour);
 
+//START SERVER
 app.listen(port, () => {
   console.log('App running ');
 });
