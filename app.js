@@ -1,17 +1,23 @@
 const express = require('express');
-
 const morgan = require('morgan');
+const path = require('path');
 
 const tourRouter = require('./routes/TourRoutes');
 const userRouter = require('./routes/UserRoutes');
 
-const port = 8000;
-
 const app = express();
 
 //MIDDLEWEAR
-app.use(morgan('dev')); //logging
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev')); //logging
+}
+
 app.use(express.json());
+
+//static files - html, images
+app.use(express.static(__dirname + '/public'));
+app.use(express.static(__dirname + '/public/img'));
+// app.use(express.static(__dirname + '/public/img/tours'));
 
 app.use((req, res, next) => {
   console.log('hello from the middleware');
@@ -28,7 +34,4 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 
-//START SERVER
-app.listen(port, () => {
-  console.log('App running ');
-});
+module.exports = app;
