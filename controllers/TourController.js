@@ -1,6 +1,15 @@
 const Tour = require('../model/tourModel');
 
 //ROUTE HANDLERS
+exports.aliasTopTours = async (req, res, next) => {
+  //localhost:8000/api/v1/tours?limit=5&sort=-ratingsAverage,price
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary, difficulty';
+
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     /* BUILD QUERY */
