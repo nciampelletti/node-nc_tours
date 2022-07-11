@@ -6,8 +6,6 @@ const app = require('./app');
 const port = process.env.PORT || 8000;
 
 //evironment variables
-//console.log(app.get('env'));
-// console.log(process.env);
 const DB = process.env.DATABASE.replace(
   '<PASSWORD>',
   process.env.DATABASE_PASSWORD
