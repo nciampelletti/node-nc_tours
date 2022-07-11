@@ -29,7 +29,28 @@ exports.getAllTours = async (req, res) => {
       query = query.sort('-createdAt');
     }
 
-    //console.log(req.query);
+    //3. Fields limiting
+    //http://localhost:8000/api/v1/tours?fields=name,duration,difficulty,price
+    if (req.query.fields) {
+      const fields = req.query.fields.split(',').join(' ');
+
+      query = query.select(fields);
+    } else {
+      //default
+      query = query.select('-__v'); //exclude last field
+    }
+
+    //4. Pagination
+    //http://localhost:8000/api/v1/tours?page=2&limit=10
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skipValue = (page - 1) * limit;
+
+    query = query.skip(skipValue).limit(limit);
+    if (req.query.page) {
+      const numTours = await Tours.countDocuments();
+      if (skipValue >= numTours) throw new Error('This page doesnt exist');
+    }
 
     /* EXECUTE QUERY */
     const tours = await query;
