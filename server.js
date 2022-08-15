@@ -1,4 +1,13 @@
 const mongoose = require('mongoose');
+
+//SAFETY NET
+//catches all uncaught exceptions
+process.on('uncaughtException', (err) => {
+  console.log(err.name, err.message);
+  console.log('uncaught Exception. Shutting Down');
+  process.exit(1);
+});
+
 const dotenv = require('dotenv');
 dotenv.config({ path: './config.env' });
 
@@ -24,6 +33,16 @@ mongoose
   });
 
 //START SERVER
-app.listen(port, () => {
+const server = app.listen(port, () => {
   console.log('App running ');
+});
+
+//SAFETY NET
+//handling promiss rejections anywhere in the app
+process.on('unhandledRejections', (err) => {
+  console.log(err.name, err.message);
+  console.log('unhandled Rejection. Shutting Down');
+  server.close(() => {
+    process.exit(1);
+  });
 });
