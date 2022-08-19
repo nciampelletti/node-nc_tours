@@ -4,10 +4,22 @@ const catchAsync = require('../utils/catchAsync');
 const jwt = require('jsonwebtoken');
 const AppError = require('../utils/appError');
 const { listeners } = require('../model/tourModel');
+const sendEmail = require('../utils/emailHandler');
+const crypto = require('crypto'); //buildin module
 
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
+  });
+};
+
+const createSendToken = (user, statusCode, req, res) => {
+  const token = signToken(user._id);
+
+  res.status(statusCode).json({
+    status: 'success',
+    token,
+    data: { user },
   });
 };
 
@@ -20,13 +32,7 @@ exports.signup = catchAsync(async (req, res, next) => {
     role: req.body.role,
   });
 
-  const token = signToken(user._id);
-
-  res.status(201).json({
-    status: 'success',
-    token,
-    data: { user },
-  });
+  createSendToken(user, 201, req, res);
 });
 
 exports.login = catchAsync(async (req, res, next) => {
@@ -50,12 +56,7 @@ exports.login = catchAsync(async (req, res, next) => {
   }
 
   //id everything is ok send json token back to the client
-  const token = await signToken(user._id);
-
-  res.status(200).json({
-    status: 'success',
-    token,
-  });
+  createSendToken(user, 200, req, res);
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
@@ -129,11 +130,108 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
   //generater random token
   const resetToken = user.createPasswordResetToken();
-
+  //Important - VALIDATION OPTION ON SAVE - to prevent validation check for required fields
   await user.save({ validateBeforeSave: false });
+
   //send it back as an email
+  //sendEmail;
+  const resetUrl = `${req.protocol}://${req.get(
+    'host'
+  )}/api/v1/users/resetPassword/${resetToken}`;
+
+  const message = `Forgot your password? Submit a request with your new passsword and confirm to: ${resetUrl}. If you didnt forget your fassword, please ignore this email!`;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Your password reset token (valid 10 mins)',
+      message,
+    });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Token sent to email!',
+    });
+  } catch (err) {
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+
+    //Important - VALIDATION OPTION ON SAVE - to prevent validation check for required fields
+    await user.save({ validateBeforeSave: false });
+
+    console.log(err);
+
+    return next(
+      new AppError('There was an error sending an email. Try again later', 500)
+    );
+  }
 });
 
 exports.resetPassword = catchAsync(async (req, res, next) => {
-  //
+  //get user based on token
+  const passwordResetToken = crypto
+    .createHash('sha256')
+    .update(req.params.token)
+    .digest('hex');
+
+  const user = await User.findOne({
+    passwordResetToken,
+    passwordResetExpires: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    next(
+      new AppError(
+        'The user belonging to this token is no longer exists or token has expired',
+        404
+      )
+    );
+  }
+
+  //if token is not expired, and there is a user, set new password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
+
+  //update changedPasswordAt property for the user
+  //this step done automatically in the model
+
+  //Important - VALIDATION OPTION ON SAVE - to prevent validation check for required fields
+  //in this case we want ot validate
+  await user.save();
+
+  //log the user in and send new JWT
+  //id everything is ok send json token back to the client
+  createSendToken(user, 200, req, res);
+});
+
+exports.updatePassword = catchAsync(async (req, res, next) => {
+  //Get user from the collection
+  const user = await User.findById(req.user.id).select('+password');
+
+  if (!user) {
+    return next(new AppError('The user doesnt exist', 404));
+  }
+
+  //check if posted password is correct
+  if (!(await user.correctPassword(req.body.passwordCurrent, user.password))) {
+    return next(new AppError('Your current password is wrong', 401));
+  }
+
+  //if password is correct, update password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+
+  //update changedPasswordAt property for the user
+  //this step done automatically in the model
+
+  //Important - VALIDATION OPTION ON SAVE - to prevent validation check for required fields
+  //in this case we want ot validate
+  //User.findByIdandUpdate will not work as intented1
+  await user.save();
+
+  //log the user in and send new JWT
+  //id everything is ok send json token back to the client
+  createSendToken(user, 200, req, res);
 });

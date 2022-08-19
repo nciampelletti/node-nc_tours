@@ -51,6 +51,18 @@ const UserSchema = mongoose.Schema({
 
 UserSchema.pre('save', async function (next) {
   //only run this function if password was modified
+  if (!this.isModified('password') || this.isNew) return next();
+
+  //sometimes token is created faster (before) the changepasssword is updated
+  //lets use little hack to minus 1 sec
+  //that would insure the token is created after passwordChangedAt is updated
+  this.passwordChangedAt = Date.now() - 1000;
+
+  next();
+});
+
+UserSchema.pre('save', async function (next) {
+  //only run this function if password was modified
   if (!this.isModified('password')) return next();
 
   //hash password
@@ -87,7 +99,7 @@ UserSchema.methods.createPasswordResetToken = function () {
     .update(resetToken)
     .digest('hex');
 
-  // console.log({ resetToken }, this.passwordResetToken);
+  console.log({ resetToken }, this.passwordResetToken);
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000;
 
