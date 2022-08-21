@@ -7,7 +7,7 @@ class APIFeatures {
 
   /* FILTERING */
   filter() {
-    const queryObj = { ...this.queryString };
+    const queryObj = { ...this.queryString }; //query that comes from route
     const excludeField = ['page', 'sort', 'limit', 'fields'];
 
     excludeField.forEach((el) => delete queryObj[el]);
