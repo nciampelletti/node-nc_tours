@@ -36,6 +36,7 @@ class APIFeatures {
   }
 
   limitFields() {
+    //http://localhost:8000/api/v1/tours?fields=name,duration,price,ratingAverage
     if (this.queryString.fields) {
       const fields = this.queryString.fields.split(',').join(' ');
 
@@ -49,6 +50,7 @@ class APIFeatures {
   }
 
   paginate() {
+    //http://localhost:8000/api/v1/tours?page=2&limit=10
     const page = this.queryString.page * 1 || 1;
     const limit = this.queryString.limit * 1 || 100;
     const skipValue = (page - 1) * limit;

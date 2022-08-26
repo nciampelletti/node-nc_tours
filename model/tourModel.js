@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const slugify = require('slugify');
 const validator = require('validator');
+// const User = require('./userModel');
 
 const tourSchema = new mongoose.Schema(
   {
@@ -77,11 +78,36 @@ const tourSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    startLocation: {
+      //GeoJson
+      type: {
+        type: String,
+        default: 'Point',
+        enum: ['Point'],
+      },
+      coordinates: [Number],
+      address: String,
+      description: String,
+    },
+    locations: [
+      {
+        type: {
+          type: String,
+          default: 'Point',
+          enum: ['Point'],
+        },
+        coordinates: [Number],
+        address: String,
+        description: String,
+        day: Number,
+      },
+    ],
+    quides: [{ type: mongoose.Schema.ObjectId, ref: 'User' }],
   },
   {
     //displays virtuals fields
     toJSON: { virtuals: true },
-    toobject: { virtuals: true },
+    toObject: { virtuals: true },
   }
 );
 
@@ -97,24 +123,20 @@ tourSchema.pre('save', function (next) {
   next();
 });
 
-/*
-tourSchema.pre('save', function (next) {
-  console.log('will save documents....');
-  next();
-});
-
-//execur\ted after post save happens, we have a ready doc as result
-tourSchema.post('save', function (doc, next) {
-  console.log(doc);
-  next();
-});
-*/
-
 //QUERY MIDDLEWEARE - for all find we use reqular expressions
 tourSchema.pre(/^find/, function (next) {
-  // tourSchema.pre('find', function (next) {
   this.find({ secretTour: { $ne: true } });
   this.start = Date.now();
+  next();
+});
+
+tourSchema.pre(/^find/, function (next) {
+  //use populate to joim main quiry with the references once -> Tours with Users (guide field)
+  this.populate({
+    path: 'quides',
+    select: '-__v -passwordChangedAt',
+  });
+
   next();
 });
 
@@ -123,11 +145,6 @@ tourSchema.post(/^find/, function (doc, next) {
 
   next();
 });
-
-// tourSchema.pre('findOne', function (next) {
-//   this.find({ secretTour: { $ne: true } });
-//   next();
-// });
 
 //AGREGATION MIDDLEWEAR
 tourSchema.pre('aggregate', function (next) {

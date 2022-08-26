@@ -12,6 +12,7 @@ const hpp = require('hpp');
 const AppError = require('./utils/appError');
 const tourRouter = require('./routes/TourRoutes');
 const userRouter = require('./routes/UserRoutes');
+const reviewRouter = require('./routes/ReviewRoutes');
 const globalErrorHandler = require('./controllers/ErrorController');
 
 const app = express();
@@ -73,6 +74,7 @@ app.use((req, res, next) => {
 //ROUTES
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
+app.use('/api/v1/reviews', reviewRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`cant find ${req.originalUrl} on the server!`, 404));

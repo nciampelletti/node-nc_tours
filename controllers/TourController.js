@@ -33,6 +33,7 @@ exports.getAllTours = catchAsync(async (req, res, next) => {
 });
 
 exports.getTour = catchAsync(async (req, res, next) => {
+  //use populate to joim main quiry with the references once -> Tours with Users (guide field)
   const tour = await Tour.findById(req.params.id);
 
   if (!tour) {
