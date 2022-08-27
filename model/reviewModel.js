@@ -36,15 +36,24 @@ ReviewSchema.pre(/^find/, function (next) {
   //use populate to joim main quiry with the references once -> Tours with Users (guide field)
   // this
 
+  // this.populate({
+  //   path: 'user',
+  //   select: 'name -_id',
+  // }).populate({
+  //   path: 'tour',
+  //   select: 'name photo',
+  // });
+
   this.populate({
     path: 'user',
     select: 'name -_id',
-  }).populate({
-    path: 'tour',
-    select: 'name photo',
   });
 
   next();
 });
 
 module.exports = mongoose.model('Review', ReviewSchema);
+
+//POST /tours/qe123sadasda3sadasdsdas/reviews
+//GET /tours/qe123sadasda3sadasdsdas/reviews/12312asadasd12312213
+//reviews is child of tours - nested route

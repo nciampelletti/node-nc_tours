@@ -2,7 +2,14 @@ const express = require('express');
 const tourController = require('../controllers/TourController');
 const authController = require('../controllers/AuthController');
 
+//routes merging - for nested routes
+const reviewRouter = require('./ReviewRoutes');
+
 const router = express.Router();
+
+//POST /tours/qe123sadasda3sadasdsdas/reviews
+//GET /tours/qe123sadasda3sadasdsdas/reviews/12312asadasd12312213
+router.use('/:tourId/reviews', reviewRouter);
 
 router
   .route('/top-5-cheap')
