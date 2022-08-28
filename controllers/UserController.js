@@ -18,17 +18,6 @@ const filterObj = (obj, ...allowedFields) => {
 
 // const users = JSON.parse(fs.readFileSync(filePath));
 
-//ROUTE HANDLERS
-exports.getAllUsers = catchAsync(async (req, res, next) => {
-  const users = await User.find();
-
-  res.status(200).json({
-    status: 'success',
-    results: users.length,
-    data: { users: users },
-  });
-});
-
 //updating currently authenticated User
 exports.updateMe = catchAsync(async (req, res, next) => {
   //create an error if user tries to update the password
@@ -68,21 +57,17 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined',
-  });
-};
-
 exports.createUser = (req, res) => {
   res.status(500).json({
     status: 'error',
-    message: 'This route is not yet defined',
+    message: 'This route is not yet defined! Please use /signup instead',
   });
 };
 
 //for admin: update all of the user data, delete
 //dont update password with this Update!!!
+//ROUTE HANDLERS
+exports.getAllUsers = factory.getAll(User);
 exports.deleteUser = factory.deleteOne(User);
 exports.updateUser = factory.updateOne(User);
+exports.getUser = factory.getOne(User);
