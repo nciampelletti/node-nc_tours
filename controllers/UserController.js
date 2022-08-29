@@ -14,10 +14,6 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
-// const filePath = path.join(__dirname, '/../dev-data/data/users.json');
-
-// const users = JSON.parse(fs.readFileSync(filePath));
-
 //updating currently authenticated User
 exports.updateMe = catchAsync(async (req, res, next) => {
   //create an error if user tries to update the password
@@ -57,11 +53,9 @@ exports.deleteMe = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createUser = (req, res) => {
-  res.status(500).json({
-    status: 'error',
-    message: 'This route is not yet defined! Please use /signup instead',
-  });
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
 };
 
 //for admin: update all of the user data, delete
@@ -71,3 +65,10 @@ exports.getAllUsers = factory.getAll(User);
 exports.deleteUser = factory.deleteOne(User);
 exports.updateUser = factory.updateOne(User);
 exports.getUser = factory.getOne(User);
+
+exports.createUser = (req, res) => {
+  res.status(500).json({
+    status: 'error',
+    message: 'This route is not yet defined! Please use /signup instead',
+  });
+};

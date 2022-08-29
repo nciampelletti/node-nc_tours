@@ -77,6 +77,7 @@ exports.getAll = (Model) =>
 
     /* EXECUTE QUERY */
     const doc = await features.query;
+    //.explain(); //analize the query statistics
 
     /* SEND RESPONSE */
     res.status(200).json({
