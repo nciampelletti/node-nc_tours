@@ -5,17 +5,9 @@ const Review = require('../model/reviewModel');
 const factory = require('./handlerFactory');
 
 exports.setTourUserIds = (req, res, next) => {
-  //allow nested routes
-  //if no tour specified in the body, take tourid from query string
-  if (!req.body.tour) {
-    req.body.tour = req.params.tourId;
-  }
-
-  if (!req.body.user) {
-    //if no user specified in the body, take tourid from query string
-    req.body.user = req.user.id; //we get user from protect middlewear
-  }
-
+  // Allow nested routes
+  if (!req.body.tour) req.body.tour = req.params.tourId;
+  if (!req.body.user) req.body.user = req.user.id;
   next();
 };
 

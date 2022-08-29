@@ -1,4 +1,6 @@
 const mongoose = require('mongoose');
+const Tour = require('../model/tourModel');
+
 const ReviewSchema = new mongoose.Schema(
   {
     review: {
@@ -32,6 +34,10 @@ const ReviewSchema = new mongoose.Schema(
   }
 );
 
+//create campound index on Review to prevent multiple reviews
+//Tour can only have 1 review per user
+ReviewSchema.index({ tour: 1, user: 1 }, { unique: true });
+
 ReviewSchema.pre(/^find/, function (next) {
   //use populate to joim main quiry with the references once -> Tours with Users (guide field)
   // this
@@ -52,8 +58,53 @@ ReviewSchema.pre(/^find/, function (next) {
   next();
 });
 
-module.exports = mongoose.model('Review', ReviewSchema);
+ReviewSchema.statics.calcAverageRatings = async function (tourId) {
+  const stats = await this.aggregate([
+    {
+      $match: { tour: tourId },
+    },
+    {
+      $group: {
+        _id: '$tour',
+        nRating: { $sum: 1 },
+        avgRating: { $avg: '$rating' },
+      },
+    },
+  ]);
 
-//POST /tours/qe123sadasda3sadasdsdas/reviews
-//GET /tours/qe123sadasda3sadasdsdas/reviews/12312asadasd12312213
-//reviews is child of tours - nested route
+  console.log(stats);
+
+  if (stats.length > 0) {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: stats[0].nRating,
+      ratingsAverage: stats[0].avgRating,
+    });
+  } else {
+    await Tour.findByIdAndUpdate(tourId, {
+      ratingsQuantity: 0,
+      ratingsAverage: 4.5,
+    });
+  }
+};
+
+//only for newly CREATED docs
+ReviewSchema.post('save', function () {
+  //this points to current review
+  //this.constructor points to the Review model
+  this.constructor.calcAverageRatings(this.tour);
+});
+
+//findOneAndUpdate
+//findOneAndDelete
+ReviewSchema.pre(/^findOneAnd/, async function (next) {
+  //this keyword is the current query here, so we need it executed
+  this.doc = await this.findOne();
+  next();
+});
+
+ReviewSchema.post(/^findOneAnd/, async function () {
+  //await this.find() does NOT work here, query has already executed
+  await this.doc.constructor.calcAverageRatings(this.doc.tour);
+});
+
+module.exports = mongoose.model('Review', ReviewSchema);

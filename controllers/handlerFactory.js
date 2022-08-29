@@ -65,7 +65,7 @@ exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
     //To allow for nested GET reviews on Tour (HACK)
     //if no tour specified in the body, take tourid from query string
-    let filter;
+    let filter = {};
     if (req.params.tourId) filter = { tour: req.params.tourId };
 
     //BUILD QUERY
