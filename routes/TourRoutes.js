@@ -16,6 +16,14 @@ router
   .get(tourController.aliasTopTours, tourController.getAllTours);
 
 router.route('/tour-stats').get(tourController.getToursStats);
+
+router
+  .route('/tours-within/:distance/center/:latlng/unit/:unit')
+  .get(tourController.getToursWithin);
+
+//calculate the distance from cirtain point to the all tours in our collection
+router.route('/distances/:latlng/unit/:unit').get(tourController.getDistances);
+
 router
   .route('/monthly-plan/:year')
   .get(
@@ -33,6 +41,8 @@ router
     tourController.createTour
   );
 
+//tours-distance?distance=233&center=-40,45&unit=km
+//tours-distance/233/center/-40,45/unit/km
 router
   .route('/:id')
   .get(tourController.getTour)
