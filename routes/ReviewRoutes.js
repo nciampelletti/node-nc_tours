@@ -9,16 +9,17 @@ const router = express.Router({ mergeParams: true });
 //POST /tours/qe123sadasda3sadasdsdas/reviews
 //GET /tours/qe123sadasda3sadasdsdas/reviews/12312asadasd12312213
 
-router.use(authController.protect);
-
 router
   .route('/')
   .get(reviewController.getAllReviews)
   .post(
+    authController.protect,
     authController.restrictTo('user'),
     reviewController.setTourUserIds,
     reviewController.createReview
   );
+
+router.use(authController.protect);
 
 router
   .route('/:id')

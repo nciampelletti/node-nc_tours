@@ -1112,8 +1112,8 @@ body {
     linear,
     left top,
     right bottom,
-    from(#7dd56f),
-    to(#28b487)
+    from(#89bee2),
+    to(#84abe6)
   );
   background-image: linear-gradient(to right bottom, #7dd56f, #28b487);
   opacity: 0.7;

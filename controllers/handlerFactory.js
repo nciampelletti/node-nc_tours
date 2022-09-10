@@ -29,7 +29,7 @@ exports.updateOne = (Model) =>
 
     res.status(200).json({
       status: 'success',
-      data: { data: doc },
+      data: doc,
     });
   });
 
@@ -39,12 +39,16 @@ exports.createOne = (Model) =>
 
     res.status(201).json({
       status: 'success',
-      data: { data: doc },
+      data: doc,
     });
   });
 
 exports.getOne = (Model, popOptions) =>
   catchAsync(async (req, res, next) => {
+    //TODO ... REMOVE
+    // res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+    //find by Id or by Slug
     let query = Model.findById(req.params.id);
 
     if (popOptions) query.populate(popOptions);
@@ -57,19 +61,22 @@ exports.getOne = (Model, popOptions) =>
 
     res.status(200).json({
       status: 'success',
-      data: { data: doc },
+      data: doc,
     });
   });
 
 exports.getAll = (Model) =>
   catchAsync(async (req, res, next) => {
+    //TODO ... REMOVE
+    // res.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
     //To allow for nested GET reviews on Tour (HACK)
     //if no tour specified in the body, take tourid from query string
     let filter = {};
     if (req.params.tourId) filter = { tour: req.params.tourId };
 
     //BUILD QUERY
-    const features = new APIFeatures(Model.find(), req.query)
+    const features = new APIFeatures(Model.find(filter), req.query)
       .filter()
       .sort()
       .limitFields()
@@ -83,6 +90,6 @@ exports.getAll = (Model) =>
     res.status(200).json({
       status: 'success',
       results: doc.length,
-      data: { data: doc },
+      data: doc,
     });
   });

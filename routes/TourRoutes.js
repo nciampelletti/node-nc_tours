@@ -57,4 +57,6 @@ router
     tourController.deleteTour
   );
 
+router.route('/:slug').get(tourController.getTour);
+
 module.exports = router;

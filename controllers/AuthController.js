@@ -38,6 +38,11 @@ const createSendToken = (user, statusCode, req, res) => {
 };
 
 exports.signup = catchAsync(async (req, res, next) => {
+  // //TODO: remove
+  // req.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  console.log('WE ARE HERE!');
+
   const user = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -50,6 +55,11 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
+  //TODO: remove
+  // req.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  // console.log('WE ARE HERE!');
+
   const { password, email } = req.body;
 
   //check whethe email and passwords exist

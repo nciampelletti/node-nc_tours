@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cors = require('cors');
 
 const AppError = require('./utils/appError');
 const tourRouter = require('./routes/TourRoutes');
@@ -44,6 +45,8 @@ app.use(mongoSanitize());
 //that will clean input from mellicious HTML
 app.use(xss());
 
+app.use(cors());
+
 //prevent parameter polution, cleans query string
 //../api/tours?sort=duration&sort=price
 //by removing first duplicate parameter
@@ -63,13 +66,24 @@ app.use(
 //static files - html, images
 app.use(express.static(__dirname + '/public'));
 app.use(express.static(__dirname + '/public/img'));
-// app.use(express.static(__dirname + '/public/img/tours'));
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
 
   next();
 });
+
+// app.use((req, res, next) => {
+//   req.header('Access-Control-Allow-Origin', '*');
+//   next();
+// });
+
+// app.options(
+//   '*',
+//   cors({ origin: 'http://localhost:8000', optionsSuccessStatus: 200 })
+// );
+
+// app.use(cors({ origin: 'http://localhost:8000', optionsSuccessStatus: 200 }));
 
 //ROUTES
 app.use('/api/v1/tours', tourRouter);
