@@ -20,8 +20,8 @@ const globalErrorHandler = require('./controllers/ErrorController');
 const app = express();
 
 //NEW
-app.enable('trust proxy');
-//app.set('trust proxy', 1);
+//app.enable('trust proxy');
+app.set('trust proxy', 1);
 
 //GLOBAL MIDDLEWEAR
 //Set security HTTP HEADERS
