@@ -16,32 +16,89 @@ const signToken = (id) => {
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
-  const cookieOptions = {
+  res.cookie('jwt', token, {
     expires: new Date(
       Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
     ),
     httpOnly: true,
-  };
+    // secure: req.secure || req.headers['x-forwarded-proto'] === 'https',
+  });
 
-  if (process.env.NODE_ENV === 'production') cookieOptions.secure = true;
-
-  res.cookie('jwt', token, cookieOptions);
-
-  //remove password from output
+  // Remove password from output
   user.password = undefined;
 
   res.status(statusCode).json({
     status: 'success',
     token,
-    data: { user },
+    data: {
+      user,
+    },
   });
 };
 
-exports.signup = catchAsync(async (req, res, next) => {
-  // //TODO: remove
-  // req.set('Access-Control-Allow-Origin', 'http://localhost:3000');
+const filterObj = (obj, ...allowedFields) => {
+  const newObj = {};
+  Object.keys(obj).forEach((el) => {
+    if (allowedFields.includes(el)) newObj[el] = obj[el];
+  });
 
-  console.log('WE ARE HERE!');
+  return newObj;
+};
+
+//updating currently authenticated User
+exports.updateMe = catchAsync(async (req, res, next) => {
+  //create an error if user tries to update the password
+  if (req.body.password || req.body.passwordConfirm) {
+    return next(
+      new AppError(
+        'This route is not for password updates. Please use /updatePassword',
+        400
+      )
+    );
+  }
+
+  //update user doc
+  //filter unwanted field names that are not allowed to be updated
+  const filteredBody = filterObj(req.body, 'name', 'email');
+
+  const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
+    new: true,
+    runValidators: true,
+  });
+
+  // res.status(200).json({
+  //   status: 'success',
+  //   data: { user: updatedUser },
+  // });
+  createSendToken(updatedUser, 201, req, res);
+});
+
+//updating currently authenticated User
+exports.deleteMe = catchAsync(async (req, res, next) => {
+  await User.findByIdAndUpdate(req.user.id, {
+    active: false,
+  });
+
+  res.status(204).json({
+    status: 'success',
+    data: null,
+  });
+});
+
+exports.getMe = (req, res, next) => {
+  req.params.id = req.user.id;
+  next();
+};
+
+exports.signup = catchAsync(async (req, res, next) => {
+  //check whether user exists and password is correct
+  const foundUser = await User.findOne({ email: req.body.email }).select(
+    '-password'
+  );
+
+  if (foundUser) {
+    next(new AppError('This email has been already used. ', 401));
+  }
 
   const user = await User.create({
     name: req.body.name,
@@ -55,11 +112,6 @@ exports.signup = catchAsync(async (req, res, next) => {
 });
 
 exports.login = catchAsync(async (req, res, next) => {
-  //TODO: remove
-  // req.set('Access-Control-Allow-Origin', 'http://localhost:3000');
-
-  // console.log('WE ARE HERE!');
-
   const { password, email } = req.body;
 
   //check whethe email and passwords exist
@@ -84,13 +136,15 @@ exports.login = catchAsync(async (req, res, next) => {
 });
 
 exports.protect = catchAsync(async (req, res, next) => {
-  //Get token and check whther it is there
+  // 1) Getting token and check of it's there
   let token;
   if (
     req.headers.authorization &&
     req.headers.authorization.startsWith('Bearer')
   ) {
     token = req.headers.authorization.split(' ')[1];
+  } else if (req.cookies.jwt) {
+    token = req.cookies.jwt;
   }
 
   if (!token) {
@@ -99,16 +153,16 @@ exports.protect = catchAsync(async (req, res, next) => {
     );
   }
 
-  //verify token
-  const { id: userID, iat: JWTtimeStamp } = jwt.verify(
-    token,
-    process.env.JWT_SECRET
-  );
-  //attach the user to the job routes
-  console.log(userID);
+  // //verify token
+  // const { id: userID, iat: JWTtimeStamp } = jwt.verify(
+  //   token,
+  //   process.env.JWT_SECRET
+  // );
+  // 2) Verification token
+  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
 
   //check if user exists
-  const freshUser = await User.findById(userID);
+  const freshUser = await User.findById(decoded.id);
 
   if (!freshUser) {
     next(
@@ -117,7 +171,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   }
 
   //check if use changed password after JWT was issued
-  if (freshUser.changedPasswordAfter(JWTtimeStamp)) {
+  if (freshUser.changedPasswordAfter(decoded.iat)) {
     //password was changed
     next(
       new AppError(
@@ -129,6 +183,7 @@ exports.protect = catchAsync(async (req, res, next) => {
 
   //grant access to the protected route
   req.user = freshUser;
+  res.locals.user = freshUser;
   next();
 });
 
@@ -182,8 +237,6 @@ exports.forgotPassword = catchAsync(async (req, res, next) => {
 
     //Important - VALIDATION OPTION ON SAVE - to prevent validation check for required fields
     await user.save({ validateBeforeSave: false });
-
-    console.log(err);
 
     return next(
       new AppError('There was an error sending an email. Try again later', 500)

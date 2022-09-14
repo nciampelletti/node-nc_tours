@@ -8,6 +8,9 @@ const {
   updatePassword,
   protect,
   restrictTo,
+  updateMe,
+  deleteMe,
+  getMe,
 } = require('../controllers/AuthController');
 
 const {
@@ -16,9 +19,6 @@ const {
   getUser,
   updateUser,
   deleteUser,
-  updateMe,
-  deleteMe,
-  getMe,
 } = require('../controllers/UserController');
 
 //signup, login, resetpassword

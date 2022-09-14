@@ -8,6 +8,7 @@ const helmet = require('helmet');
 const mongoSanitize = require('express-mongo-sanitize');
 const xss = require('xss-clean');
 const hpp = require('hpp');
+const cookieParser = require('cookie-parser');
 const cors = require('cors');
 
 const AppError = require('./utils/appError');
@@ -17,6 +18,10 @@ const reviewRouter = require('./routes/ReviewRoutes');
 const globalErrorHandler = require('./controllers/ErrorController');
 
 const app = express();
+
+//NEW
+app.enable('trust proxy');
+//app.set('trust proxy', 1);
 
 //GLOBAL MIDDLEWEAR
 //Set security HTTP HEADERS
@@ -37,6 +42,8 @@ app.use('/api', limiter); //we apply only to api routes
 
 //body parser, reading data from the body to req.body
 app.use(express.json({ limit: '10kb' })); //body over 10kb would not be accepted
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 //Data sanitization against NoSQL query injections
 app.use(mongoSanitize());
@@ -45,7 +52,16 @@ app.use(mongoSanitize());
 //that will clean input from mellicious HTML
 app.use(xss());
 
+// 1) GLOBAL MIDDLEWARES
+// Implement CORS
 app.use(cors());
+// Access-Control-Allow-Origin *
+// app.use(
+//   cors({
+//     origin: 'http://localhost:3000',
+//     credentials: true,
+//   })
+// );
 
 //prevent parameter polution, cleans query string
 //../api/tours?sort=duration&sort=price
