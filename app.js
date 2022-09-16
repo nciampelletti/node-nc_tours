@@ -63,6 +63,9 @@ app.use(cors());
 //   })
 // );
 
+// Serving static files
+app.use(express.static(path.join(__dirname, 'public')));
+
 //prevent parameter polution, cleans query string
 //../api/tours?sort=duration&sort=price
 //by removing first duplicate parameter
@@ -79,27 +82,11 @@ app.use(
   })
 );
 
-//static files - html, images
-app.use(express.static(__dirname + '/public'));
-app.use(express.static(__dirname + '/public/img'));
-
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();
 
   next();
 });
-
-// app.use((req, res, next) => {
-//   req.header('Access-Control-Allow-Origin', '*');
-//   next();
-// });
-
-// app.options(
-//   '*',
-//   cors({ origin: 'http://localhost:8000', optionsSuccessStatus: 200 })
-// );
-
-// app.use(cors({ origin: 'http://localhost:8000', optionsSuccessStatus: 200 }));
 
 //ROUTES
 app.use('/api/v1/tours', tourRouter);

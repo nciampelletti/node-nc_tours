@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+
 const {
   signup,
   login,
@@ -11,6 +12,8 @@ const {
   updateMe,
   deleteMe,
   getMe,
+  uploadUserPhoto,
+  resizeUserPhoto,
 } = require('../controllers/AuthController');
 
 const {
@@ -33,7 +36,10 @@ router.use(protect);
 router.route('/updateMyPassword').patch(updatePassword); //protected
 
 router.route('/me').get(getMe, getUser); //protected
-router.route('/updateMe').patch(updateMe); //protected
+
+//will also update phone on UpdateMe route
+//use multer middlerwear
+router.route('/updateMe').patch(uploadUserPhoto, resizeUserPhoto, updateMe); //protected
 router.route('/deleteMe').delete(deleteMe); //protected
 
 //this will protect all routes that come after this point and restricts only to Admin

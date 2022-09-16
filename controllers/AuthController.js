@@ -6,13 +6,21 @@ const AppError = require('../utils/appError');
 const { listeners } = require('../model/tourModel');
 const sendEmail = require('../utils/emailHandler');
 const crypto = require('crypto'); //buildin module
+const multer = require('multer'); //image uploading
+const sharp = require('sharp'); //image resizing
 
+/*
+function: signToken
+*/
 const signToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: process.env.JWT_EXPIRES_IN,
   });
 };
 
+/*
+function: createSendToken
+*/
 const createSendToken = (user, statusCode, req, res) => {
   const token = signToken(user._id);
 
@@ -45,6 +53,43 @@ const filterObj = (obj, ...allowedFields) => {
   return newObj;
 };
 
+/*
+//middlewear to upload user photo
+//configure multer image upload
+//image would be evalable as a buffer
+*/
+const multiStorage = multer.memoryStorage();
+
+const multiFilter = (req, file, cb) => {
+  //check whether uploaded file is an image,
+  //if it is image, simply return true
+  if (file.mimetype.startsWith('image')) {
+    cb(null, true);
+  } else {
+    cb(new AppError('Not an image! Please upload only images', 400), false);
+  }
+};
+
+const upload = multer({ storage: multiStorage, fileFilter: multiFilter });
+
+exports.uploadUserPhoto = upload.single('photo');
+
+exports.resizeUserPhoto = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    next();
+  }
+
+  req.file.filename = `user-${req.user.id}-${Date.now()}.jpeg`;
+
+  await sharp(req.file.buffer)
+    .resize(500, 500)
+    .toFormat('jpeg')
+    .jpeg({ quality: 90 })
+    .toFile(`public/img/users/${req.file.filename}`);
+
+  next();
+});
+
 //updating currently authenticated User
 exports.updateMe = catchAsync(async (req, res, next) => {
   //create an error if user tries to update the password
@@ -60,16 +105,13 @@ exports.updateMe = catchAsync(async (req, res, next) => {
   //update user doc
   //filter unwanted field names that are not allowed to be updated
   const filteredBody = filterObj(req.body, 'name', 'email');
+  if (req.file) filteredBody.photo = req.file.filename;
 
   const updatedUser = await User.findByIdAndUpdate(req.user.id, filteredBody, {
     new: true,
     runValidators: true,
   });
 
-  // res.status(200).json({
-  //   status: 'success',
-  //   data: { user: updatedUser },
-  // });
   createSendToken(updatedUser, 201, req, res);
 });
 
