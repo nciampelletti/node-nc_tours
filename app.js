@@ -15,6 +15,7 @@ const AppError = require('./utils/appError');
 const tourRouter = require('./routes/TourRoutes');
 const userRouter = require('./routes/UserRoutes');
 const reviewRouter = require('./routes/ReviewRoutes');
+const bookingRouter = require('./routes/BookingRoutes');
 const globalErrorHandler = require('./controllers/ErrorController');
 
 const app = express();
@@ -22,6 +23,9 @@ const app = express();
 //NEW
 //app.enable('trust proxy');
 app.set('trust proxy', 1);
+
+app.set('view engine', 'pug');
+app.set('views', path.join(__dirname, 'views'));
 
 //GLOBAL MIDDLEWEAR
 //Set security HTTP HEADERS
@@ -92,6 +96,7 @@ app.use((req, res, next) => {
 app.use('/api/v1/tours', tourRouter);
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/reviews', reviewRouter);
+app.use('/api/v1/booking', bookingRouter);
 
 app.all('*', (req, res, next) => {
   next(new AppError(`cant find ${req.originalUrl} on the server!`, 404));
