@@ -24,6 +24,8 @@ const {
   deleteUser,
 } = require('../controllers/UserController');
 
+const { getMyTours } = require('../controllers/BookingController');
+
 //signup, login, resetpassword
 router.route('/signup').post(signup);
 router.route('/login').post(login);
@@ -41,6 +43,8 @@ router.route('/me').get(getMe, getUser); //protected
 //use multer middlerwear
 router.route('/updateMe').patch(uploadUserPhoto, resizeUserPhoto, updateMe); //protected
 router.route('/deleteMe').delete(deleteMe); //protected
+
+router.route('/mytours').get(getMyTours); //protected
 
 //this will protect all routes that come after this point and restricts only to Admin
 router.use(restrictTo('admin'));
