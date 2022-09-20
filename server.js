@@ -3,8 +3,6 @@ const mongoose = require('mongoose');
 //SAFETY NET
 //catches all uncaught exceptions
 process.on('uncaughtException', (err) => {
-  console.log(err.name, err.message);
-  console.log('uncaught Exception. Shutting Down');
   process.exit(1);
 });
 

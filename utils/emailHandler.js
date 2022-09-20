@@ -68,7 +68,7 @@ module.exports = class Email {
     try {
       await this.send('welcome', 'Welcome to our comany!!');
     } catch (error) {
-      console.log('error', error);
+      // console.log('error', error);
     }
   }
 

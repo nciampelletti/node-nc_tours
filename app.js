@@ -10,6 +10,7 @@ const xss = require('xss-clean');
 const hpp = require('hpp');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
+const compression = require('compression');
 
 const AppError = require('./utils/appError');
 const tourRouter = require('./routes/TourRoutes');
@@ -85,6 +86,9 @@ app.use(
     ],
   })
 );
+
+//compress text send to clients
+app.use(compression());
 
 app.use((req, res, next) => {
   req.requestTime = new Date().toISOString();

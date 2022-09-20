@@ -40,10 +40,10 @@ const importData = async () => {
     await Review.create(reviews);
     await User.create(users, { validateBeforeSave: false });
 
-    console.log('data successfully loaded');
+    //console.log('data successfully loaded');
     process.exit();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
 
@@ -54,10 +54,10 @@ const deleteData = async () => {
     await User.deleteMany();
     await Review.deleteMany();
 
-    console.log('data successfully deleted');
+    // console.log('data successfully deleted');
     process.exit();
   } catch (err) {
-    console.log(err);
+    // console.log(err);
   }
 };
 
