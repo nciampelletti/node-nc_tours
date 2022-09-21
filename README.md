@@ -1,4 +1,5 @@
 # node-nc_tours
 
-End-points DocGen library
+DocGen api end points documentation
+
 https://ciampelletti-tours.herokuapp.com/
