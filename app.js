@@ -28,10 +28,6 @@ app.set('trust proxy', 1);
 app.set('view engine', 'pug');
 app.set('views', path.join(__dirname, 'views'));
 
-//GLOBAL MIDDLEWEAR
-//Set security HTTP HEADERS
-app.use(helmet()); //secure header
-
 //development logging
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev')); //logging
@@ -67,6 +63,10 @@ app.use(cors());
 //     credentials: true,
 //   })
 // );
+
+//GLOBAL MIDDLEWEAR
+//Set security HTTP HEADERS
+app.use(helmet()); //secure header
 
 // Serving static files
 app.use(express.static(path.join(__dirname, 'public')));
